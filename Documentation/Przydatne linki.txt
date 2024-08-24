@@ -1,0 +1,29 @@
+https://stackoverflow.com/questions/2532907/combining-c-and-c-sharp
+
+Getting Started With Audio Programming
+https://audiodev.blog/newbie-resources/
+
+Making DAW in C#
+https://www.youtube.com/@dallinseagercodes8257
+
+Proste rozpoznawanie dźwięków
+https://www.tensorflow.org/tutorials/audio/simple_audio?hl=pl
+
+Rozpoznawanie muzyki
+https://www.toptal.com/algorithms/shazam-it-music-processing-fingerprinting-and-recognition
+
+Tworzeneie Shazama
+https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
+https://www.youtube.com/watch?v=T4PJoAh4X1g
+
+Tworzenie aplikacji rozpoznawania dźwięku z wykorzystaniem dedytkowanej biblioteki C#:
+https://www.youtube.com/watch?v=PIdGW11zVDM
+
+WYMAGANIA DLA PARACY DYPLOMOWEJ NA PŁ:
+http://bg.p.lodz.pl/redagowanie-pracy-dyplomowej
+
+Fingerprinting w Pythonie - potrzebny (tworzenie, zarządzanie, przechowywanie znaczników do utwórów)
+https://willdrevo.com/fingerprinting-and-audio-recognition-with-python/
+
+How Shazam works article
+https://laplacian.wordpress.com/2009/01/10/how-shazam-works/

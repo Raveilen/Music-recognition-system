@@ -1,0 +1,55 @@
+Sensowne technologie:
+	- ACRCloud - biblioteka slużąca do identyfikowania treści (w tym między innymi muzyki)
+	- NAudio - do przetwarzania dźwięku w C#
+
+	- TPL - zrównoleglanie procesu (wielowątkowość przetwarzania dźwięku)
+
+SQL Server jako baza danych dla aplikacji
+
+Teoria Nyquist-Shannona	
+
+Nagrywanie dźwięku w języku C#
+
+Założenia dla systemu:
+	- Pobrana próbka dźwięku będzie analizowana w domenie częstotliwości. Musimy zatem pobrać próbkę pozyskaną w domenie czasu i za pomocą dyskretnej transformaty Fourriera przenieść ją do dziedziny częstotliwości
+	- Aby mieć punkt odniesienia dla aplikacji, dobrym pomysłem będzie stworzenie bazy danych przechowującej informacje o utworach. Zakładamy 3 podstawowe tabele:
+		- Utwory
+		- Fingerprint dla poszczególnych utowrów
+		- Autorów (opcjonalnie ale może być przydatne w późiejszym etapie rozwoju czy do analiz)
+		- Gatunek (tabela również opcjonalna i również do statystyk, wymagałaby ode mnie posortowania utowrów kategoriami)
+	- Trzeba zastanowić się nad pipelinem do przetwarzania utworu:
+	- Stworzenie systemu nagrywania dźwięku (jak starczy na to czasu) w celu dalszej analizy albo system udostępniania plików tak by możliwa była analiza na podstawie dostarczonej przez użytkownika treści.
+	- Mechanizm udostępniania w aplikacji własnych utworów z opisami wiąże się z tym że trzeba będzie obsłużyć przekazywanie dźwięków do aplikacji, a później zająć się ich odpowiednią obróbką. Konieczne będzie jednak wtedy przekształcanie muzyki stereo do kanału mono.
+	- API dla aplikacji:
+		- aplikacja typu web-service (MVC,.NET CORE WEB API,Razor Pages, Blazor)
+			- MVC raczej będzie słabe bo nie zakładamy wielu interfejsów graficznych czy podstron
+			- Razor Pages redukuje potrzebę tworzenia kontrolerów, a całość aplikacji dzielimy na strony (poza tym bardzo lekkie)
+			- Blazor - fajny jak chcemy ciekawe, interaktywne API bez babrania się w JavaScripcie
+		- aplikacja mobilna (MAUI) - crossplatformowość (może być wtedy na mobilki i na desktop), też sposko jeżeli chodzi o desktop, ale również wymaga uczenia się XAMLA
+		- aplikacja desktopowa (WPF) - desktopówka wyłącznie pod Windows (trochę słabo bo trzeba się XAMLA uczyć u MVVM)
+		
+		Chyba najlepszym wyborem będą zatem RazorPages (prosty serwis internetowy w oparciu o model HTML, CSS i C#)
+	
+	- Pipeline dla przetwarzania utworu:
+		1) pobieramy utwór od użytkownika (na początku może być on dostarczany za pomocą podania odpowiedniej ścieżki, później opracuje się algorytm do efektywnego zapisywania tymczasowo utworu w celu jego dalszego przetwarzania). Prawdopodobnie będzie do tego dedykowany folder, w którym przechowywane będą dźwięki. Dostarczane przez użytkownika pliki dźwiękowe również będą do niego trafiały. Folder służyć będzie utworzeniu od podstaw bazy danych w postaci haszy jednakże system nie oczekuje bezpośredniego dostępu do utworów. 
+		2) Z dziedziny czasu za pomocą dyskretnej transformaty Fouriera przenosimy utwór do dziedziny częstotliwości
+		3) W dziedzinie częstotliwości zbieramy hasze dla danego utworu
+			1. Dzielimy sobie nasz utwór na czunki o stałym rozmiarze aby nie stracić informacji o czasie dla którego występują dane częstotliwości.
+			2. Dla każdego chunka zachodzi konieczność wykonania FFT
+		4) Dla odpowiednich zakresów częstotliwości w piosence, ustalamy sobie zakresy dla których sprawdzamy najwyższą magintude (natężenie dźwięku), a później wykonujemy sobie LUT z tych wartości dla każdej piosenki w ramch zakresów. Gdy w bazie pojawia się nowa piosenka, możemy ją zidentyfikować jako na podstawie największej ilośc prasujących to siebie magnitude z odpowiednich zakresów. Proces ten zakłada przyspieszenie działania algorytmu, ponieważ sprawdzenie wszystkich punktów dla wszystkich częstotliwości w piosence na podstawie listy chunków byłoby kłopotliwe. Iterujemy zatem po kolejnych częstotliwościach i na podstawie wartości pasujących do danego zakresu ustalamy która z wartości magnitude jest największa.
+		Zapisujemy ją potem w LUT jako sposób na identyfikację piosenki. LUT możemy zapisywać w pliku z usystematyzowanym dla nas formatem zapisu tak by dało się potem te wartości jednoznacznie odczytywać.
+		5) Gdy mamy już wartości magnitude dla odpowiednich zakresów częstotliwości, możemy przystąpić do tworzenia hasza. Hasz tworzymy za pomocą wartości uzyskanych z odpowiednich zakresów podstawiając pod to adekwatny wzór który utworzy nam pewną wartość liczbową. Podział na zakresy częstotliwości i generowanie haszy wykonujemy dla każdej linii analizy spektralnej.
+		6a) UTWÓR DO UZUPEŁNIENIA BAZY: jeżeli dodajemy utwór, to podawana jest również informacja o jego tytule, autorze, długości, gatunku etc., potem do tabeli z haszami dorzucana jest informacja na temat haszu
+		6b) UTWÓR DO ROZPOZNANIA - nie mamy informacji dodatkowych a zatem pozyskane hasze spawdzamy pod kątem największej liczby dopasowań z haszami innych utworów. Utwór o największej liczbie dopasowań będzie jako wynik wyszukiwania
+		
+		W opisie projekowania Shazam, ostatnia sekcja mówi o tym że tworzymy 2 data sety. Pierwszy przechowuje kluczowe informacje o utworach a zatem możemy tam zamieścić tytuł, autora, czas trwania ewentualnie gatunek.
+		
+		Drugi dataset służyć będzie do wykrywania piosenek. A mianowicie Będzie to ogromna baza z haszami gdzie do każdego hasza przypisana będzie lista punktów w uworach (DataPoits). DataPoint składać się będzie z id utworu oraz czasu w którym dany hasz występuje w utworze.
+		
+		Celem wykrycia utworu będzie zatem wykorzystanie haszy z aktualnie przetwarzanej piosenki i sprawdzenie czy w bazie nie ma już danych haszy, a jeśli są to jak wyglądają offsety w czasie? (nie musimy przecież dysponować nagraniem piosenki od początku do końca). Może to być coś w trakcie. Na koniec przetwarzania powinniśmy mieć dość sporą listę pasujących haszy z różnych piosenek z różnymi offestami. Kluczowym będzie zatem weryfikacja ile razy dane ID się powtarza oraz czy offsety +- pokrywają się ze sobą (znaleźć na to jakiś skuteczny algorytm lub wartość statystyczną np. odchylenie standardowe)
+		
+		
+		
+		
+		
+		

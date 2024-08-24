@@ -1,0 +1,24 @@
+
+1) DAW (Digital Audio Workstation) w modelu bazodanowym
+	- umieszczamy utwór z dysku lub umieszczamuy link na podstawie którego plik jest pobierany w bazie danych.
+	- modyfikujemy, konwertujemy elementy w bazie danych. Polecenia dotyczące konwersji wysyłamy za pośrednictwem aplikacji
+	- zmodyfikowane pliki można pobierać na komputer za pomocą aplikacji.
+	- użytkownik ma możliwość kasowania plików i zmieniania ich nazwy.
+	- C# .NET, (C++ Juce - do pluginów)
+	
+2) Aplikacja do rozpoznawania dźwięku (Shazam)
+ - System umieszczony jest na bazie danych
+ - Za pomocą dostarczonych z bazy danych plików, rozkładamy dźwięki treningowe do spektrogramów, a później na ich podstawie trenujemy model (tak jak ze szmerami płuc ale jest bardzo dużo kategorii)
+	- przechwytujemy próbki dźwiękowe
+	- porównujemy jez próbkami dostępnymi w bazie danych i ustalamy stopień podobieństwa na podstawie wspólnych cech (fingerprinting)
+ - Druga opcja (pomijająca model sztucznej intelignecji) - operujemy na haszach, wyznaczamy hasze na podstawie największej ampitudy i ustalamy piosenkę na podstawie liczby matchy.
+	- Do opracowania system nagrywania dźwięku
+	- Na podstawie nagranego dźwięku przenosimy go do dziedziny częstotliwości (zamieniamy chunki dźwięków na dziedzinę częstotliwości tak aby nie utracić informacji o czasie)
+	- fingerprinting będzie polegał na zapisaniu w postaci hasza peaków dźwiękowych (highest magnitude)
+	- Przypisujemy hasze do poszczególnych utworów. W ten sposób tworzy nam się baza danych na podstawie której staramy się odnaleźć dopasowanie
+	- Proces rozpoznawania to również fingerprinting poszczególnych chunków (rozkładamy do dziedziny częstotliwości) i generujemy hasze. Przyrównujemy powstałe hasze do tych co mamy w bazie danych dzięku temu (w zależności od ilości dopasowań) identyfikujemy piosenkę.
+- Do zrobienia w C# i C++ (ewentualnie Tensorflow i librosa jeżeli zdecydujemy się na model sztucznej intelignecji)
+
+Przygotować sobie szczegóły dotyczące projektu (Dokument wprowadzający projekt)
+
+ 
