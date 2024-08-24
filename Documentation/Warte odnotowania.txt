@@ -44,7 +44,7 @@ Założenia dla systemu:
 		
 		W opisie projekowania Shazam, ostatnia sekcja mówi o tym że tworzymy 2 data sety. Pierwszy przechowuje kluczowe informacje o utworach a zatem możemy tam zamieścić tytuł, autora, czas trwania ewentualnie gatunek.
 		
-		Drugi dataset służyć będzie do wykrywania piosenek. A mianowicie Będzie to ogromna baza z haszami gdzie do każdego hasza przypisana będzie lista punktów w uworach (DataPoits). DataPoint składać się będzie z id utworu oraz czasu w którym dany hasz występuje w utworze.
+		Drugi dataset służyć będzie do wykrywania piosenek. A mianowicie Będzie to ogromna baza z haszami gdzie do każdego hasza przypisana będzie lista punktów w uworach (DataPoints). DataPoint składać się będzie z id utworu oraz czasu w którym dany hasz występuje w utworze.
 		
 		Celem wykrycia utworu będzie zatem wykorzystanie haszy z aktualnie przetwarzanej piosenki i sprawdzenie czy w bazie nie ma już danych haszy, a jeśli są to jak wyglądają offsety w czasie? (nie musimy przecież dysponować nagraniem piosenki od początku do końca). Może to być coś w trakcie. Na koniec przetwarzania powinniśmy mieć dość sporą listę pasujących haszy z różnych piosenek z różnymi offestami. Kluczowym będzie zatem weryfikacja ile razy dane ID się powtarza oraz czy offsety +- pokrywają się ze sobą (znaleźć na to jakiś skuteczny algorytm lub wartość statystyczną np. odchylenie standardowe)
 		
