@@ -1,0 +1,130 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using NAudio.Wave;
+using System.Runtime.ConstrainedExecution;
+using System.Numerics;
+using NAudio.Dsp;
+using MathNet.Numerics.IntegralTransforms;
+using Complex = System.Numerics.Complex;
+using MusicRecognitionSystem.Data;
+
+//Klasa AudioFilesManager
+string datasetPath = @"C:\Users\samur\Desktop\STUDIA semestr 7\Praca Inżynierska\Music-recognition-system\Dataset\Small dataset";
+
+string[] files = Directory.GetFiles(datasetPath, "*.mp3", SearchOption.AllDirectories);
+
+List<string> filenames = new List<string>();
+foreach (var file in files)
+{
+    filenames.Add(Path.GetFileName(file));
+    Console.WriteLine(Path.GetFileName(file));
+}
+
+try
+{
+    List<byte[]> songs = new List<byte[]>();
+    foreach (var file in files)
+    {
+        songs.Add(File.ReadAllBytes(file));
+    }
+
+    //Data
+    int CHUNK_SIZE = 4096;
+    List<Complex[][]> songFrequencies = new List<Complex[][]>();
+
+    foreach (var song in songs)
+    {
+        int amountPossible = song.Length / CHUNK_SIZE;
+        Complex[][] frequencies = new Complex[amountPossible][];
+
+        for (int i = 0; i < amountPossible; i++)
+        {
+            Complex[] complex = new Complex[CHUNK_SIZE];
+            for (int j = 0; j < CHUNK_SIZE; j++)
+            {
+                complex[j] = new Complex(song[j + i * CHUNK_SIZE], 0);
+            }
+
+            Fourier.Forward(complex, FourierOptions.Matlab);
+            frequencies[i] = complex;
+        }
+
+        songFrequencies.Add(frequencies);
+    }
+
+    //Klasa: HashManager
+    //Data
+    int LOWER_LIMIT = 41; //nie może być 40 bo według takiego algorytmu 40 paasowałoby jeszcze do poprzedniego przedziału.
+    // Przedziały: 41-80, 81-120, 121-180, 181-300
+    int UPPER_LIMIT = 300;
+    int[] RANGE = new int[] {80, 120, 180, UPPER_LIMIT + 1};
+
+    int rangeSelect(int frequencyPosition)
+    {
+        if (frequencyPosition < LOWER_LIMIT || frequencyPosition > UPPER_LIMIT)
+            return -1;
+        int index = 0;
+        for (; frequencyPosition > RANGE[index]; index++);
+        return index;
+    }
+
+    //Klasa: SongProcessor //wywołać wielokrotnie dla wszystkich piosenek w program
+    try
+    {
+        int songCounter = 0;
+        foreach (var song in songFrequencies)
+        {
+            using (StreamWriter hashFile = new StreamWriter($"Hashes/{songCounter}.txt"))
+            {
+                for (int i = 0; i < song.Length; i++)
+                {
+                    double[] maxMagnitudes = { -1, -1, -1, -1, -1 };
+                    int[] maxFrequencies = new int[4];
+
+                    for (int j = LOWER_LIMIT; j < UPPER_LIMIT - 1; j++)
+                    {
+                        Complex frequency = song[i][j];
+                        double magnitude = Math.Log(Complex.Abs(frequency) + 1);
+
+                        int index = rangeSelect(j);
+                        if (index != -1) //checks if value in range
+                        {
+                            if (magnitude > maxMagnitudes[index])
+                            {
+                                maxMagnitudes[index] = magnitude;
+                                maxFrequencies[index] = j;
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Attempt to process data from invalid range!");
+                        }
+                    }
+                    /* Debug purposese hash */
+                    /* string songTestHash = $"{maxFrequencies[0]} {maxFrequencies[1]} {maxFrequencies[2]} {maxFrequencies[3]}"; */
+                    int songHash = HashCode.Combine(maxFrequencies[0], maxFrequencies[1], maxFrequencies[2], maxFrequencies[3]);
+                    hashFile.WriteLine(songHash);
+                }
+
+                songCounter++;
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error: {ex.Message}");
+    }
+
+
+
+  /*  List<double> test = new List<double>();
+    foreach (var frequency in songFrequencies[1][1])
+    {
+        test.Add(Math.Log(Complex.Abs(frequency) + 1));
+    }*/}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}

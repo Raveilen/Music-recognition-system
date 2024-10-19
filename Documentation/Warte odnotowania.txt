@@ -48,6 +48,61 @@ Założenia dla systemu:
 		
 		Celem wykrycia utworu będzie zatem wykorzystanie haszy z aktualnie przetwarzanej piosenki i sprawdzenie czy w bazie nie ma już danych haszy, a jeśli są to jak wyglądają offsety w czasie? (nie musimy przecież dysponować nagraniem piosenki od początku do końca). Może to być coś w trakcie. Na koniec przetwarzania powinniśmy mieć dość sporą listę pasujących haszy z różnych piosenek z różnymi offestami. Kluczowym będzie zatem weryfikacja ile razy dane ID się powtarza oraz czy offsety +- pokrywają się ze sobą (znaleźć na to jakiś skuteczny algorytm lub wartość statystyczną np. odchylenie standardowe)
 		
+		Generalnie zatem ne przywyczajamy się że hasz przynależy do konkretnej piosenki lecz raczej że piosenka posiada konkretnego hasza w danym punkcie utworu (ale może posiadać podobnego hasza również inna piosenka).
+		
+		Na dobry początek dobrze by było wybrać 10 losowych utworów (small data set) i stworzyć pipeline odpowiedzialny za faktyczne identyfikowanie piosenek i sprawdzić czy działa. Przejść sobie przez te wszystkie kroki i zobaczyć czy algorytm jest słuszny i jak będzie wyglądała jego implementacja.
+		
+		Ogarnąć sobie jakiś .gitignore pod aplikację konsolową w C# żeby śmieci nie wrzucało na gita.
+		
+		W kontekście niejasności związanych z generowaniem wartości dla linii widma spektralnego, działa to mniej więcej w ten sposób, że my najpierw zapisujemy sobie wszystkie częstotliwości naszego utworu jako tablice wartości Complex w ramach poszczególnych chunków. Moglibyśmy zrobić pojedynczą tablicę Complex, ale wtedy utracilibyśmy informacje w którym miejscu w utworze pojawiają się dane częstotliwości (tak to wiemy że w obrębie CHUNK_SIZE, występuje dana częstotliwość, czyli wiemy który to jest chunk utworu)
+		
+		Dalej natomiast traktujemy już nasze częstotliwości jak jedną tablicę, a zatem musimy przeiterować po każdym chunku, sprawdzając odpowiednie zakresy częstolitowści (iterujemy po 2 indeksie tablicy result żeby przesuwać się po kolejnych częstotliwościach) i dla zakresów wybieramy największe wartości magnitude.
+		
+		Oznacza to mniej więcej tyle, że w każdym chunku powinniśmy dostać komplet 5 najwyższych wartości magnitude w ramach danego chunka. Ponieważ powtarzamy czynność dla każdego chunka, to tych wartości będzie dużo.
+		
+		Zbieramy zatem informację
+		"Ok, dla każdej linii w pliku (chunka), wiemy że dla tego chunka to są najwyższe wartości natężenia dźwięku w konrketnych zakresach częstotliwości"
+		
+		PYTANIE:
+		Chociaż w naszym algorytmie wszystko się sprwdza do momentu pobrania częstotliwości wciąż pozostaje pytanie w jaki sposób pozyskac wartość magnitude dźwięku (wartość double) mając do dyspozycji wartość complex i wzór jak w przykładzie.
+		
+		ODPOWIEDŹ: Żeby przkształcić wartość Complex do wartości decimal, wykorzystujemy w tym celu Abs dla liczb zespolonych co jest inną kwestią niż abs dla liczb numerycznych.
+		
+		Wybieranie konkretnych czestotliwości na intensywności dźwięku w danym przedziale może być jedną z metod ale nie jedyną, generalnie chodzi o to żeby zrobić w miarę sensownego hasza.
+		Przedziały również nie muszą być tutaj takie same jak w przykładzie. Chodzi o dobranie dobrego kryterium odróżniania od siebie piosenek, które możemy ustalić na podstawie częstotliwości.
+		
+		PYTANIE:
+		Czy hasze generowane są dla całej piosenki na podstawie chunków czy chunki to coś zupełnie odrębnego w tym momencie i jedyne co nas int. Warto zwrócić uwagę na to że w wideo gościu mówi o czymś zupełnie innym niż pisze a blogu. Tam selekcja dokonywana jest nieco inaczej.
+		
+		Nas, w całym utworze interesują generalnie tylko wartości największe z przedziałów (tych przedziałów może być tyle ile chcemy i w miejscach takie jakie chcemy).
+		Chodzi o to że wartości maksymalne z przedziałów aplikują się dla CAŁEJ PIOSENKI (a zatem jak zdecydujemy się na przykład na 5 przedziałów, to w naturalny sposób skończymy z piosenką opisaną za pomocą 5 liczb).
+		
+		PYTANIE:
+			Skoro i tak hasz jest generowany dla całej piosenki, to po co w takim razie nam jest podział na chunki? Moim zdaniem hasze powinny być generowane dla każdego chunka w piosence. W ten sposób jesteśmy w stanie faktycznie uzyskać znaczącą liczbę dopasowań dla piosenki. Obejrzeć sobie jeszcze raz film tego gościa chociaż moim zdaniem najwięcej sensu ma teoria, że każdy chunk ma swojego hasza. Wtedy mamy pole do popisu żeby porównywać. Pytanie czy nie za duży nakład obliczeeniowy przy porównywaniu haszy?
+			
+			Jeżeli chcemy żeby zapisywało hasze dla każdego chunka piosenki, to konieczne jest stworzenie w tym momencie bazy danych, która będzie przechowywała dane o haszach oraz funkcji która będzie czyściła bazę przy nowym generowaniu haszy dla piosenek / generowała hasze tylko dla nowo dodanych piosenek (tytuł nie pojwił się w bazie).
+			
+		POMYSŁ
+			Aby system sam zwracał wynik po pewnym czasie, można ustawić limit w postaci ilości dopasowań. Po osiągnięciu konkrentej liczby dopasowań (ustalane na sztywno) dla którejś piosenki, program automatycznie zwróci ją jako wynik. Trzeba jednak zbilansować czas oczekiwania, do celności udzielanych odpowiedzi.
+			Drugim kryterium ograniczającym powinien być czas oczekiwania na wynik. Po jego upływie, program zwraca komuniakt o tym że nie udało się rozpoznać utworu (dopasować na podstawie szybkości odszukiwania piosenki)
+			
+		Projekt nad którym obecnie pracuję jest programem do generowania haszy
+		Powstanie osobny program dedykowany do sprawdzania haszy (jeszcze nie wiem za bardzo jak). Nie wiem tylko jeszcze czy tworzyć 3 program obsługujący API aplikacji czy lepiej połączyć sprawdzanie haszy, upload do bazy i MVC jako jedno.
+		
+		
+		
+		Alternatywy dla Shazama:
+			- Midomi
+			- SoundHound
+			- Musicxmatch
+			- Beatfind
+			- Soly
+			- MusicID
+			- Google Assistant
+		Biblioteki do fingerprintingu pozwalające na tworzenie własnych bibliotek detekcyjnych:
+			- dejavu (Python)
+			- Ecoprint
+			- Chromaprint
 		
 		
 		

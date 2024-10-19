@@ -12,9 +12,10 @@ https://www.tensorflow.org/tutorials/audio/simple_audio?hl=pl
 Rozpoznawanie muzyki
 https://www.toptal.com/algorithms/shazam-it-music-processing-fingerprinting-and-recognition
 
-Tworzeneie Shazama
+Tworzeneie Shazama (KLUCZOWE)
 https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
 https://www.youtube.com/watch?v=T4PJoAh4X1g
+https://github.com/blanche/shayam/blob/master/java/at.lw.shayam/src/at/lw/shayam/AudioAnalysis.java
 
 Tworzenie aplikacji rozpoznawania dźwięku z wykorzystaniem dedytkowanej biblioteki C#:
 https://www.youtube.com/watch?v=PIdGW11zVDM
@@ -27,3 +28,6 @@ https://willdrevo.com/fingerprinting-and-audio-recognition-with-python/
 
 How Shazam works article
 https://laplacian.wordpress.com/2009/01/10/how-shazam-works/
+
+Console application with EF:
+https://www.learnentityframeworkcore5.com/project-types/console
