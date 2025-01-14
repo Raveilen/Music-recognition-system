@@ -54,12 +54,20 @@ TO DO:
 	- Jeśli to nie pomoże, szukamy innego rozwiązania tworzenia haszy (przegląd literatury)
 
 PRO TIP
-Można znaleźć sobie krótsze dźwięki do identyfikacji żeby trochę krócej się to wszystko przetwarzało (a przynajmniej dopóki nie ogarnę rozsądnego haszowania)
+Można znaleźć sobie krótsze dźwięki do identyfikacji żeby trochę krócej się to wszystko przetwarzało (a przynajmniej dopóki nie ogarnę rozsądnego haszowania) DONE
 
 Dziennik 14.01.2025
-Szukanie piosenek z tekstem idzie nieco lepiej niż szukanie piosenek z samą melodią, ale i tak wynik jest raczej mizerny
+Szukanie piosenek z tekstem idzie nieco lepiej niż szukanie piosenek z samą melodią, ale i tak wynik jest raczej mizerny RESULT
 
+Przebudować na koniec projektowania wariantu spektrogramowego konstruktury w SongProcessor aby nie było takiego zróżnicowania pomiędzy nagraniem a normalnym dźwiękiem.
 
+Zamiast AudioData lepiej będzie zastosować pole byte[] do przetwarzania
+
+Jeżeli Rozwiązanie ze spektrogramem okaże sie skuteczne, to konieczne będzie szczegółowe doczytanie o oknie, Hamminga, jego zastosowaniu a także czym faktycznie ono jest (znaleźć literaturę do tego)
+
+Okno Hamminga pozwala na oczyszczenie krańców okien z niepotrzebnych zakłóceń (w dużym skrócie)
+
+Rozważyć, w celu zwiększenia wydajności programu, zastosowanie operacji LINQ zamiast pętli (podobnie jak w pythonie redukujemy ręczne iteracje, to nie C)
 
 		
 		

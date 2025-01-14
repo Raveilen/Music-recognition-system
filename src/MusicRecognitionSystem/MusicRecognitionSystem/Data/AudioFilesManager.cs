@@ -22,7 +22,11 @@ namespace MusicRecognitionSystem.Data
     }
 
     internal class AudioFileManager
-    {   
+    {
+        public static int SAMPLING_RATE = 44100;  //44.1kHz
+        public static int BITS_PER_SAMPLE = 16; //16-bit PCM (depth)
+        public static int CHANNELS = 1; //Mono
+
         public static string pathToMainDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
         public static string pathToAudioFiles = Path.Combine(pathToMainDirectory, "AudioFiles");
 
@@ -38,7 +42,7 @@ namespace MusicRecognitionSystem.Data
             //load mp3 file with specified parameters
             using (var mp3Reader = new Mp3FileReader(audioFiles[index]))
             {
-                var waveFormat = new WaveFormat(RecordingProcessor.SAMPLING_RATE, RecordingProcessor.BITS_PER_SAMPLE, RecordingProcessor.CHANNELS);
+                var waveFormat = new WaveFormat(SAMPLING_RATE, BITS_PER_SAMPLE, CHANNELS);
 
                 using (var conversionStream = new WaveFormatConversionStream(waveFormat, mp3Reader))
                 {

@@ -12,10 +12,6 @@ namespace MusicRecognitionSystem.Data
 
     internal class RecordingProcessor
     {
-        public static int SAMPLING_RATE = 44100;  //44.1kHz
-        public static int BITS_PER_SAMPLE = 16; //16-bit PCM (depth)
-        public static int CHANNELS = 1; //Mono
-
         public WaveInEvent recorder;
         public List<MatchData> matches; //lista pasujących matchy
         public List<String> allHashes;
@@ -25,7 +21,7 @@ namespace MusicRecognitionSystem.Data
         {
             recorder = new WaveInEvent()
             {
-                WaveFormat = new WaveFormat(SAMPLING_RATE, BITS_PER_SAMPLE, CHANNELS)
+                WaveFormat = new WaveFormat(AudioFileManager.SAMPLING_RATE, AudioFileManager.BITS_PER_SAMPLE, AudioFileManager.CHANNELS)
             };
             recorder.DataAvailable += OnDataAvailable;
 
