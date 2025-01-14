@@ -1,0 +1,16 @@
+Czyli rozpoznawanie muzyki na bazie ORM - na podstawie nut tworzymy graf, na podstawie którego później indentyfikowany jest utwór. Samo wykrywanie nie zostało tutaj jednak opracwowane. 
+Jest to jedynie SI do zamiany nut na grafy, z których później być może okaże się możliwe identyfikowanie utworów.
+
+Z blockchainami jest to algorytm do wykrywania utworów pod kątem praw autorskich (wykorzysytwane również haszowanie).
+
+Omówienie Shazama w literaturze:
+
+"Appified : culture in the age of apps"
+Jeremy Wade Morris
+Publisher: UNIV OF MICHIGAN PRESS, S.l., 2018
+str. 259
+
+https://www.google.pl/books/edition/Appified/sRJxDwAAQBAJ?hl=pl&gbpv=1&dq=Application%20for%20music%20recognition%20from%20recording&pg=PA259&printsec=frontcover
+
+Low power Music Recognition - podobny do mojego tyle że działa w 100% offline i jest jako aplikacja mobilna. Również działa na zasadzie fingerprintingu.
+

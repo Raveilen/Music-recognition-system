@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using MusicRecognitionSystem.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,53 +19,53 @@ namespace MusicRecognitionSystem.Data
 
         public SongProcessor songProcessor;
 
-        //temporary solution
-        public string filename;
-
-        public HashManager(SongProcessor songProcessor, string filename)
+        public HashManager(SongProcessor songProcessor)
         {
             this.songProcessor = songProcessor;
-            this.filename = filename;
+        }
+
+        public string generateHash(int chunkID)
+        {
+            double[] maxMagnitudes = { -1, -1, -1, -1, -1 };
+            int[] maxFrequencies = new int[4];
+            for (int i = LOWER_LIMIT; i < UPPER_LIMIT - 1; i++)
+            {
+                Complex frequency = songProcessor.songFrequencies[chunkID][i];
+                double magnitude = Math.Log(Complex.Abs(frequency) + 1);
+
+                int index = rangeSelect(i);
+                if (index != -1) //checks if value in range
+                {
+                    if (magnitude > maxMagnitudes[index])
+                    {
+                        maxMagnitudes[index] = magnitude;
+                        maxFrequencies[index] = i;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Attempt to process data from invalid range!");
+                }
+            }
+            string songHash = computeHash(maxFrequencies);
+
+            return songHash;
         }
 
         public void generateHashes()
         {
-            using (StreamWriter hashFile = new StreamWriter($"Hashes/{filename}.txt"))
+            //For each song chunk
+            for (int i = 0; i < songProcessor.songFrequencies.Length; i++)
             {
-                for (int i = 0; i < songProcessor.songFrequencies.Length; i++)
-                {
-                    double[] maxMagnitudes = { -1, -1, -1, -1, -1 };
-                    int[] maxFrequencies = new int[4];
-                    for (int j = LOWER_LIMIT; j < UPPER_LIMIT - 1; j++)
-                    {
-                        Complex frequency = songProcessor.songFrequencies[i][j];
-                        double magnitude = Math.Log(Complex.Abs(frequency) + 1);
-
-                        int index = rangeSelect(j);
-                        if (index != -1) //checks if value in range
-                        {
-                            if (magnitude > maxMagnitudes[index])
-                            {
-                                maxMagnitudes[index] = magnitude;
-                                maxFrequencies[index] = j;
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("Attempt to process data from invalid range!");
-                        }
-                    }
-                    string songHash = computeHash(maxFrequencies);
-                    saveHashToDatabase(songHash);
-                    hashFile.WriteLine(songHash);
-                }
+                string songHash = generateHash(i);
+                saveHashToDatabase(songHash, i);
             }
         }
 
-        private void saveHashToDatabase(string hash)
+        private void saveHashToDatabase(string songHash, int chunkNumber)
         {
-            //To extend after creating database structre
-            return;
+            //If hash does not exist, adds it, else adds only SongHash record (dupplicate hashes not allowed)
+            CRUDManager.addSongTimestamp(songProcessor.audioFile.name, songHash, chunkNumber);
         }
 
         private string computeHash(int[] maxfrequencies)

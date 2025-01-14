@@ -1,0 +1,17 @@
+Schemat bazy danych:
+
+Songs:
+ID (PRIMARY KEY)
+Name
+(length) ??? - not important that much
+
+Hashes
+ID (PRIMARY KEY)
+Value
+
+SongsHashes
+SongID
+HashID
+timestamp - nr of chunk in which specific hash occurs. Crucial for comparing hashes in the future.
+
+
