@@ -1,0 +1,5 @@
+﻿DELETE FROM SongHashes;
+DELETE FROM SONGS;
+DELETE FROM Hashes;
+
+

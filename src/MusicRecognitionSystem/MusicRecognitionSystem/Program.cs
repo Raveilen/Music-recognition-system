@@ -1,23 +1,67 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using NAudio.Wave;
-using System.Runtime.ConstrainedExecution;
-using System.Numerics;
-using NAudio.Dsp;
-using MathNet.Numerics.IntegralTransforms;
-using Complex = System.Numerics.Complex;
-using MusicRecognitionSystem.Data;
+﻿using MusicRecognitionSystem.Data;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
-
-AudioFileManager.LoadSongsMetadata();
-
-for (int i = 0; i < AudioFileManager.audioFiles.Length; i++)
+void DatabaseInit()
 {
-    AudioFile audioFile = AudioFileManager.LoadAudioFile(i);
-    SongProcessor songProcessor = new SongProcessor(audioFile);
-    songProcessor.getSongFrequencies();
-    HashManager hashManager = new HashManager(songProcessor, i.ToString());
-    hashManager.generateHashes();
+    Logger.OpenLog();
+
+    AudioFileManager.LoadSongsMetadata();
+
+    //for each song
+    for (int i = 0; i < AudioFileManager.audioFiles.Length; i++)
+    {
+        AudioFile audioFile = AudioFileManager.LoadAudioFile(i);
+        SongProcessor songProcessor = new SongProcessor(audioFile);
+        songProcessor.getFrequencies();
+        HashManager hashManager = new HashManager(songProcessor);
+        hashManager.generateHashes();
+
+        Logger.Log("\n");
+        Console.WriteLine($"Song {audioFile.name} has been added to database");
+    }
+
+    Logger.CloseLog();
 }
+
+void TestRecording()
+{
+    RecordingProcessor recordingProcessor = new RecordingProcessor();
+    recordingProcessor.StartRecording();
+    Console.WriteLine("Recording started. Press any key to stop recording.");
+    Console.ReadKey();
+    var list = recordingProcessor.matches;
+
+    recordingProcessor.StopRecording();
+
+    Console.WriteLine("Hashes generated:");
+    foreach (var hash in recordingProcessor.allHashes)
+    {
+        Console.WriteLine(hash);
+    }
+
+    if (list.Count == 0)
+    {
+        Console.WriteLine("No matches found.");
+    }
+
+    foreach (var match in list)
+    {
+        Console.WriteLine($"Match for songID {match.songID}");
+    }
+}
+
+void RecordedAudioPlayTest()
+{
+    RecordingProcessor recordingProcessor = new RecordingProcessor();
+    recordingProcessor.StartRecording();
+    Console.WriteLine("Recording started. Press any key to stop recording.");
+    Console.ReadKey();
+    recordingProcessor.recorder.StopRecording();
+    Console.WriteLine("Recording stopped");
+    recordingProcessor.PlayRecordedAudio();
+    recordingProcessor.recorder.Dispose();
+}
+
+TestRecording();
+

@@ -103,6 +103,10 @@ Założenia dla systemu:
 			- dejavu (Python)
 			- Ecoprint
 			- Chromaprint
+			
+		Wczytywanie dźwięku z mikrofonu odbędzie się za pomocą WaveInEvent. Teoretycznie wymagane jest żeby rozpocząć i zakończyć takie nagrywanie a zatem nastąpi to po zadanym upływie czasu (np. 20 sekundach), albo gdy znaleziony ostatnie prawidłowy kandydat.
+		
+		
 		
 		
 		

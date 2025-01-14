@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MusicRecognitionSystem.Data;
+using NAudio.Wave;
 
 namespace MusicRecognitionSystem.Data
 {
@@ -29,13 +31,36 @@ namespace MusicRecognitionSystem.Data
 
         public static AudioFile LoadAudioFile(int index)
         {
-            return new AudioFile(audioNames[index], File.ReadAllBytes(audioFiles[index]));
+            //extract song name
+            string extension = Path.GetExtension(audioNames[index]);
+            string songName = audioNames[index].Substring(0, audioNames[index].Length - extension.Length);
+
+            //load mp3 file with specified parameters
+            using (var mp3Reader = new Mp3FileReader(audioFiles[index]))
+            {
+                var waveFormat = new WaveFormat(RecordingProcessor.SAMPLING_RATE, RecordingProcessor.BITS_PER_SAMPLE, RecordingProcessor.CHANNELS);
+
+                using (var conversionStream = new WaveFormatConversionStream(waveFormat, mp3Reader))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        conversionStream.CopyTo(memoryStream);
+                        byte[] buffer = memoryStream.ToArray();
+                        return new AudioFile(songName, buffer);
+                    }
+                }
+            }
+            
+            /*string extension = System.IO.Path.GetExtension(audioNames[index]);
+            string songName = audioNames[index].Substring(0, audioNames[index].Length - extension.Length);
+
+            return new AudioFile(songName, File.ReadAllBytes(audioFiles[index]));*/
         }
 
         public static void LoadSongsMetadata()
         {
             audioFiles = Directory.GetFiles(pathToAudioFiles, "*.mp3", SearchOption.AllDirectories);
-            audioNames = new string[audioFiles.Length];
+            audioNames = new string[audioFiles.Length];   
 
             for (int i=0; i < audioFiles.Length; i++)
             {

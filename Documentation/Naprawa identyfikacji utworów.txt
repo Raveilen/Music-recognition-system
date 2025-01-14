@@ -1,0 +1,65 @@
+Naprawa identyfikacji utworów (co wziąć pod uwagę)?
+
+	- Zastanowić się czy przedziały częstotliwości dobrane są prawidłowo (powinny być peaki częstoliwości w obrębie chunka - powinny tworzyć nam hasza dla piosenki).
+	x Zmiana Samplowania utworów niestety nic nie dała (dalej nie wykrywa utworów z nagrania)
+	- można spróbować zaimplementować rozwiązanie ze spektrogramem zamiast haszowania takiego jakie mam obecnie
+	-
+	
+	
+Potencjalne problemy:
+	
+	Hasze wyraźnie są różne dla dźwięku nagranego i dla dźwięku z mp3
+	
+	1) Mikrofon nie nagrywa prawidłowo dźwięku
+		A Przygotować prosty program do odtworzenia nagranego dźwięku (zobaczyć co faktycznie przychodzi na input) FAILED (aczkolwiek dźwięk jest cichszy)
+			Dźwięk wydaje się być odpowiedni aczkolwiek jest dużo cichszy niż dźwięk dostarczony w nagraniu mp3
+		
+	2) Przetwarzanied dźwięku z mikrofonu odbywa się inczej niż przetwarzanie z mp3 (stąd inne hasze)
+		A Ujednolicić formaty dźwięku FAILED
+		!B Zmienić metodę tworzenia haszy (np. spektrogramy) (np. rozwiązanie zapropnowane przez czat)
+		C Zmniejszyć rozmiar chunka (być może peak dobierany jest na zbyt dużym obszarze stąd ciężko o dobre przypasowanie) (RACZEJ NIE O TO CHODZI)
+			Rozmiar chunka wpływa na dokładność, mniejszy chunk to większa dokładnośc czasowa, ale mniejsza dokładność jeśli chodzi o znajdowane peaki.
+		D Przeanalizować Proces generowania hasza dla obu przypadków 
+		E Zastosować zazebianie się haszy SLIGHTLY BETTER
+			Zaimplementowano zazębianie się haszy w stopniu 50%
+			Niestety nie ma zbyt dużej poprawy
+		
+	3) Przedział z którego wybieramy wartości dla hasza nie wystarczająco miarodanjny aby rozpoznać piosenkę
+	
+	Dla Overlaping 50% bedziemy mieli 2* CHUNK_COUNT  - 1 okienek do ogarnięcia
+	
+
+Dziennik
+13.01.2025
+Jeżeli nie pomoże rozwiązanie ze zazębianiem, należy spróbować rozwiązać generowanie spektrogramami tak jak zalecił to czat.
+W ten sposób być może faktycznie nie będzie problemu z różnicą w generowanych haszach
+Szczególnie zwrócić uwagę na przedział w którym generowane są hasze (w jaki sposób następuje segregacja które przedziały faktycznie uwzględniamy w haszowaniu)
+
+Warto się też może zastanowić, skoro ograniczamy ilość generowanych haszy, to może by tak generować tylko częstotliwości które wykorzystamy
+
+Dodanie zazębiania się sprawiło że mamy więcej haszy (niemalże dwukrotnie) na piosenkę
+
+Niestety, algorytm dalej praktycznie nie jest w stanie rozpoznać piosenki.
+
+Prawdopodobnie problem leży zakorzeniony w samym algorytmie tworzenia haszy lub wykrywania peaków. KIERUNEK ROZWOJU
+
+Przed przystąpieniem do pracy, zapisać wersję programu na githubie (ogarnąć system kontroli wersji)
+
+TO DO:
+	- przeładować nagrania
+	- ogarnąć system kontroli wersji
+	- spróbować zastosować implementację haszy w oparciu o wskazówki z czata gpt (być może rozwiązanie ze spektrogramami sprawdzi się lepiej przy identyfikacji)
+	- zostawić na wszelki wypadek przerobioną, dotychczasową wersję programu jakby trzeba było wrócić do rozwiązania z artykułu.
+	- Sprawdzić rezultaty dla tak zorganiozwanego haszowania
+	- Jeśli to nie pomoże, szukamy innego rozwiązania tworzenia haszy (przegląd literatury)
+
+PRO TIP
+Można znaleźć sobie krótsze dźwięki do identyfikacji żeby trochę krócej się to wszystko przetwarzało (a przynajmniej dopóki nie ogarnę rozsądnego haszowania)
+
+Dziennik 14.01.2025
+Szukanie piosenek z tekstem idzie nieco lepiej niż szukanie piosenek z samą melodią, ale i tak wynik jest raczej mizerny
+
+
+
+		
+		
