@@ -22,6 +22,7 @@ namespace MusicRecognitionSystem.Data
         public int windowsCount;
 
         public List<Double[]> spectrogram;
+        public byte[] audioBytes;
 
         public SongProcessor(AudioFile audiofile)  //sound from file processing
         {
@@ -31,6 +32,7 @@ namespace MusicRecognitionSystem.Data
             this.overlapSize = OVERLAPING_SIZE;
             this.windowsCount = (audioFile.data.Length - chunkSize) / overlapSize + 1;
             this.songFrequencies = new Complex[windowsCount][];
+            audioBytes = audiofile.data;
 
 
             //adds song if not exists to database (dupplicates not allowed)
@@ -45,6 +47,7 @@ namespace MusicRecognitionSystem.Data
             this.overlapSize = this.chunkSize / 2;
             this.windowsCount = 1;
             this.songFrequencies = new Complex[chunkCount][];
+            this.audioBytes = audioChunk;
         }
 
         public void getFrequencies()
@@ -83,7 +86,7 @@ namespace MusicRecognitionSystem.Data
         {
             //SPLIT SAMPLES INTO WINDOWS WITH OVERLAP
 
-            float[] samples = ConvertBytesToSamples(audioFile.data); //extract samples from bytes
+            float[] samples = ConvertBytesToSamples(audioBytes); //extract samples from bytes
 
             List<float[]> windows = new List<float[]>(); //windows (chunks) of audio samples with overlap
             int stepSize = CHUNK_SIZE - OVERLAPING_SIZE; //how much bytes to move window each time

@@ -24,6 +24,27 @@ void DatabaseInit()
     Logger.CloseLog();
 }
 
+void SpectrogramBasedHashGeneration()
+{
+    Logger.OpenLog();
+
+    AudioFileManager.LoadSongsMetadata();
+
+    for(int i=0; i< AudioFileManager.audioFiles.Length; i++)
+    {
+        AudioFile audioFile = AudioFileManager.LoadAudioFile(i);
+        SongProcessor songProcessor = new SongProcessor(audioFile);
+        songProcessor.computeSpectrogram();
+        HashManager hashManager = new HashManager(songProcessor);
+        hashManager.GenerateHashesFromPeaks();
+
+        Logger.Log("\n");
+        Console.WriteLine($"Song {audioFile.name} has been added to database");
+    }
+
+    Logger.CloseLog();
+}
+
 void TestRecording()
 {
     RecordingProcessor recordingProcessor = new RecordingProcessor();
@@ -63,5 +84,5 @@ void RecordedAudioPlayTest()
     recordingProcessor.recorder.Dispose();
 }
 
-TestRecording();
+SpectrogramBasedHashGeneration();
 

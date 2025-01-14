@@ -58,22 +58,10 @@ namespace MusicRecognitionSystem.Data
                 .Where(sh => sh.timestamp == chunkNumber)
                 .FirstOrDefault();
 
-            /*SongHash debug = _context.SongHashes
-                .Include(s => s.song)
-                .Include(h => h.hash)
-                .Where(sh => sh.hash.hashValue == hashValue)
-                .Where(sh => sh.song.name == songName)
-                .FirstOrDefault();
-
-            if(debug != null)
-            {
-                Console.WriteLine("Here I am");
-            }*/
-
             //if timestamp already exists, do not add it
             if (timestampExist != null)
             {
-                Console.WriteLine($"Timestamp {chunkNumber} for song {songName} has already been added to database with hash {hashValue}");
+                //Console.WriteLine($"Timestamp {chunkNumber} for song {songName} has already been added to database with hash {hashValue}");
                 return;
             }
 

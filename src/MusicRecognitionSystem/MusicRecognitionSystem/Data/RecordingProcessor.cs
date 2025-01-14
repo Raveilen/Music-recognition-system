@@ -91,7 +91,7 @@ namespace MusicRecognitionSystem.Data
         {
             byte[] audioBytes = recorderBytes.ToArray();
 
-            var bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(SAMPLING_RATE, BITS_PER_SAMPLE, CHANNELS))
+            var bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(AudioFileManager.SAMPLING_RATE, AudioFileManager.BITS_PER_SAMPLE, AudioFileManager.CHANNELS))
             {
                 BufferLength = audioBytes.Length,
                 DiscardOnBufferOverflow = true

@@ -69,5 +69,21 @@ Okno Hamminga pozwala na oczyszczenie krańców okien z niepotrzebnych zakłóce
 
 Rozważyć, w celu zwiększenia wydajności programu, zastosowanie operacji LINQ zamiast pętli (podobnie jak w pythonie redukujemy ręczne iteracje, to nie C)
 
+W podeściu ze spektrogramami (ale chyba nie tylko), domenę czasu wyznaczają nam okna natomiast domenę częstotliwości, poszczególne wartości magnitue w danym oknie.
+Generalnie jeśli o to chodzi to spektrogram przechowuje zlogarytmizowane wartości magnitue, które wiemy w jakich momentach czasowych się znajdują dzięki podziałowi na okna.
 		
-		
+
+I'm not sure about one thing. What about song sequences which overlaps within a song. If we construct hash based on frequencies and time differences between peaks
+
+Generalnie po zastosowaniu skali logarytminczej sugeruje że większość db to [-40, 0] (poniżej -40 są już dźwięki ciche).
+Wartości db mogą sięgać jednak nawet 40 a w Alanie Jacksonie 50db
+
+ROZKMINIĆ DLACZEGO POWTARZAJĄ SIĘ TIMESTAMPY
+
+Generowanie haszy odbywa się nie najgorzej, aczkolwiek jest ich zdecydowanie za dużo. Można pobawić się thresholdem, ale nie dla każdej piosenki będzie to rozwiązanie korzystne.
+
+To do:
+	- Spróbować przegenerować dla większego thresholda
+	- Spróbować połączyć podejścia z zapisywaniem wartości największych i odległościami między peakami
+	- Przepatrzeć dokładnie jeszcze raz kod na czacie i porównać rozwiązania (być może coś mi umknęło lub zostało źle zaimplementowane)
+
