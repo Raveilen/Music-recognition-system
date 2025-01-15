@@ -86,4 +86,36 @@ To do:
 	- Spróbować przegenerować dla większego thresholda
 	- Spróbować połączyć podejścia z zapisywaniem wartości największych i odległościami między peakami
 	- Przepatrzeć dokładnie jeszcze raz kod na czacie i porównać rozwiązania (być może coś mi umknęło lub zostało źle zaimplementowane)
+	- Rozwiązać problem zduplikowanych timestampów (dlaczego część wartości jest identyczna) - chyba nie powinno tak być
+	- sprawdzić jakie są inne możeliwości (poza tresholdem i min max) żeby otwfiltrować nadmierne hasze i jednocześnie zapewnić sporą dokładność rozpoznawania
+		- zaimplementować inny sposób ograniczania liczby haszy na przedział na podstawie wylistowanych metod (wybrać którąś i przetestować)
+		Fajne:
+			- Top N peaks
+			- Frequency band limiting (dzielimy sobie na obszary częstotliwości i na ich podstawie określamy ile maksymalnych wartości chcemy - łączenie z Top n peaks)
+			- NMS - sprawdzamy sąsiedztwo i wybieramy tylko peaki w obrębie danego sąsiedztwa
+			- adaptive thresholding - dopasowuje peaki na podstawie wartości w chunku a nie na podstawie odgórnie narzuconego thresholdu
+	
+	Częściowo udało się przegenerować hasze dla pierwszego utworu, należy dostosować nagrywanie pod to i sparawdzić czy znajdowane będą prawidłowo piosenki przy znacząco zwiększonej liczbie haszy.
+	
+Dziennik 15.01.2025
+Spektrogram z chunka z nagrania charakteryzuje się tym, że mamy do czynienia ze znacznie mniejszą ilością. Mimo że dźwięk jest stosunkowo głośno, to ilość decybeli w spektrogramie sięga +- [-100, -50]db.
 
+Dźwięk w uzyskany z nagrania (Blues Saraceno) charakteryzuje się tym że dopiero około 7800 bajata zaczyna coś reprezentować (nie wynosi 0), ale zwykle jest to przeplatane wartościami skrajnymi (około 255, 253 itp.) także zakładam że to może być szum. Pojawiają się również wartości 0-10 (czyli szum z tej drugiej strony)
+
+Od około 8100 bajta piosenka zaczyna się powoli rozkręcać a wartości coraz bardziej zbliżają się do środka przedziału.
+
+Dopiero od 3 chunka można powiedzieć że w wersji przetworzonej z pliku pojawiają się decybele przekraczające 0. W pierwszym i drugim chunku tylko wartości -120db. Dopiero w 3 chunku pojawiają się inne ujemne wartości decybeli ale już nie -120. (Moment w którym rozkręca się piosenka)
+
+W przypadku spektrogramów z nagrania wartości decybeli wahają się od -70 do -50db około
+
+W dalszych częściach utworu wartości wydają się być bardziej zbliżone do 0 a czasami są nawet dodatnie, nie mniej jednak średnia wartości oscyluje zdecydowanie w przedziale -60 do -30db (czyli ujemne).
+
+To tłumaczy dla czego nie są generowane żadne matche (threshold powyżej 20db, a tutaj po prostu prawdopodobnie nie ma takich wartości, albo występują bardzo sporadycznie).
+
+Generalnie zatem wygląda na to że przedział decybeli dla nagrania z pliku nie pokrywa się z wartościami decybeli z nagrania.
+
+CO ROBIĆ?
+Aby udopornić nasz program na szum i na różnicę w poziomie decybeli (która wiadomo że i tak w zależności od mikrofonu i warunków będzie się różniła) Zastosujemy adaptive thresholidng or top-n magnitude peaks. Przy okazji zredukujemy też ilość generowanych haszy przypadających na okno dzięki czemu będziemy w stanie w rozsądnym czasie generować hasze potenajalnie odporne na róznicę decybeli (pod warunkiem że wartości z nagrania mają cokolwiek wspólnego z wartościami z pliku audio, a nie jest to po prostu intensywnie zaszumiona papa). Jeżeli tak jest, to prawdopodobnie będzie znaczyło że nagranie stanowi zaszumioną i nie wartą przetwarzania papę (wtedy rozumiem że najlepszym rozwiązaniem byłoby po prostu przetestować algorytm z recording na identycznej próbce i sprawdzić czy problem nie leży gdzieś w implementacji)
+
+SUGESTIA
+W kontekście przetwarzania haszy, jak już zacznie odszukiwać jakieś powiązania, dobrym pomysłem będzie wczytywanie dźwięku jako całości, a nie jako pojedynczego chunka, ponieważ potem trudno nam się będzie odnieść w jakich odstępach czasowych pojawiają się dopasowania.

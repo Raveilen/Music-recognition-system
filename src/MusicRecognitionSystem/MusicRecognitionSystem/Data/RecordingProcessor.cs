@@ -1,6 +1,7 @@
 ﻿using NAudio.Wave;
 using MusicRecognitionSystem.Model;
 using Microsoft.Identity.Client;
+using NAudio.Midi;
 
 namespace MusicRecognitionSystem.Data
 {
@@ -16,6 +17,8 @@ namespace MusicRecognitionSystem.Data
         public List<MatchData> matches; //lista pasujących matchy
         public List<String> allHashes;
         public List<Byte> recorderBytes;
+
+        public List<List<Double[]>> tempSpectrograms = new List<List<double[]>>();
 
         public RecordingProcessor()
         {
@@ -48,15 +51,15 @@ namespace MusicRecognitionSystem.Data
 
             int bytesProcessed = 0;
 
-            while(bytesProcessed < e.BytesRecorded)
+            while(e.BytesRecorded - bytesProcessed >= SongProcessor.CHUNK_SIZE * 2) //int bytesToProcess = Math.Min(SongProcessor.CHUNK_SIZE, e.BytesRecorded - bytesProcessed);
             {
-                int bytesToProcess = Math.Min(SongProcessor.CHUNK_SIZE, e.BytesRecorded - bytesProcessed);
-                byte[] audioChunk = new byte[bytesToProcess];
+                byte[] audioChunk = new byte[SongProcessor.CHUNK_SIZE * 2];
 
-                Array.Copy(e.Buffer, bytesProcessed, audioChunk, 0, bytesToProcess);
-                bytesProcessed += bytesToProcess;
+                Array.Copy(e.Buffer, bytesProcessed, audioChunk, 0, SongProcessor.CHUNK_SIZE * 2);
+                bytesProcessed += SongProcessor.CHUNK_SIZE * 2;
 
                 ProcessChunk(audioChunk);
+                
             }
         }
 
@@ -64,27 +67,38 @@ namespace MusicRecognitionSystem.Data
         {
             //obtain chunk hash
             SongProcessor chunkProcessor = new SongProcessor(audioChunk);
-            chunkProcessor.getFrequencies();
+            //chunkProcessor.getFrequencies();
+            chunkProcessor.computeSpectrogram();
+            tempSpectrograms.Add(chunkProcessor.spectrogram);
 
             HashManager chunkHashManager = new HashManager(chunkProcessor);
-            string chunkHash = chunkHashManager.generateHash(0); //only one chunk so index should be 0
-            allHashes.Add(chunkHash);
+            List<string> chunkHashList = chunkHashManager.HashesToList();
+
+            //string chunkHash = chunkHashManager.generateHash(0); //only one chunk so index should be 0
+            //allHashes.Add(chunkHash);
 
             //compare hash with database
+
+            //TUTAJ, PONIEWAŻ MAMY DO CZYNIENIA Z WIELOMA HASZAMI, NALEŻY UWZGLĘDNIĆ TEN PRZYPADEK I ROZBUDOWAĆ FUNKCJĘ
+
             using (MusicRecognitionContext context = new MusicRecognitionContext())
             {
-                List<SongHash> matchingHashes = context.SongHashes.Where(sh => sh.hash.hashValue == chunkHash).ToList();
-
-                foreach (SongHash sh in matchingHashes)
+                foreach (string hash in chunkHashList)
                 {
-                    MatchData match = new MatchData()
+                    List<SongHash> matchingHashes = context.SongHashes.Where(sh => sh.hash.hashValue == hash).ToList();
+
+                    foreach (SongHash sh in matchingHashes)
                     {
-                        songID = sh.songID,
-                        timestamp = sh.timestamp
-                    };
-                    matches.Add(match);
+                        MatchData match = new MatchData()
+                        {
+                            songID = sh.songID,
+                            timestamp = sh.timestamp
+                        };
+                        matches.Add(match);
+                    }
                 }
             }
+            
         }
 
         public void PlayRecordedAudio()

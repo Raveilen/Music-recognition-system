@@ -55,6 +55,9 @@ void TestRecording()
 
     recordingProcessor.StopRecording();
 
+    var tempSpectrograms = recordingProcessor.tempSpectrograms;
+    var averages = tempSpectrograms.Select(x => x[0].Average());
+
     Console.WriteLine("Hashes generated:");
     foreach (var hash in recordingProcessor.allHashes)
     {
@@ -84,5 +87,4 @@ void RecordedAudioPlayTest()
     recordingProcessor.recorder.Dispose();
 }
 
-SpectrogramBasedHashGeneration();
-
+TestRecording();
