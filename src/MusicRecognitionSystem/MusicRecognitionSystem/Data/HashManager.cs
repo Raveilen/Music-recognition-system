@@ -138,7 +138,7 @@ namespace MusicRecognitionSystem.Data
             for(int t = 0; t < songProcessor.spectrogram.Count; t++) //time iterating
             {
                 // Compute the median magnitude for the current time step
-                double[] magnitudes = new double[songProcessor.spectrogram.Count];
+                double[] magnitudes = new double[songProcessor.spectrogram[t].Length];
 
                 for (int f = 0; f < songProcessor.spectrogram[t].Length; f++) //frequency iterating
                     magnitudes[f] = songProcessor.spectrogram[t][f]; //upewnić się co do indeksów, czat mówi na odwrót, ale intuicja i copilot mówią inaczej (sprawdzić bo wygenerowaniu haszy czy efektywne, ewentualnie zamienić ze sobą)

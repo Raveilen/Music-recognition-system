@@ -51,9 +51,10 @@ void TestRecording()
     recordingProcessor.StartRecording();
     Console.WriteLine("Recording started. Press any key to stop recording.");
     Console.ReadKey();
-    var list = recordingProcessor.matches;
 
     recordingProcessor.StopRecording();
+
+    var list = recordingProcessor.matches;
 
     var tempSpectrograms = recordingProcessor.tempSpectrograms;
     var averages = tempSpectrograms.Select(x => x[0].Average());
@@ -73,6 +74,8 @@ void TestRecording()
     {
         Console.WriteLine($"Match for songID {match.songID}");
     }
+
+    list.GroupBy(x => x.songID).Select(x => new { songID = x.Key, count = x.Count() }).ToList().ForEach(x => Console.WriteLine($"SongID: {x.songID}, Count: {x.count}"));
 }
 
 void RecordedAudioPlayTest()

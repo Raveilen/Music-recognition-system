@@ -119,3 +119,8 @@ Aby udopornić nasz program na szum i na różnicę w poziomie decybeli (która 
 
 SUGESTIA
 W kontekście przetwarzania haszy, jak już zacznie odszukiwać jakieś powiązania, dobrym pomysłem będzie wczytywanie dźwięku jako całości, a nie jako pojedynczego chunka, ponieważ potem trudno nam się będzie odnieść w jakich odstępach czasowych pojawiają się dopasowania.
+Proponuję zatem na sztywno wczytanie całego audio (ewentualnie nadanie timera, który wyłączy odsłuchiwanie jeżeli użytkwonik nie zrobi tego ręcznie)
+
+Czat podopowiada że lepszym rozwiązaniem będzie wczytywanie nagrania chunkami zamiast wczytywanie nagrania jako całości (lepsze w kontekście przetwarzania w czasie rzeczywistym i ewentualny podjęciu decyzji szybciej).
+
+Batching jest zalecany w kontekście przetawrzania ciągłego strumienia dźwięku z nagrania.

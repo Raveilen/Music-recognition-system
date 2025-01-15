@@ -59,7 +59,6 @@ namespace MusicRecognitionSystem.Data
                 bytesProcessed += SongProcessor.CHUNK_SIZE * 2;
 
                 ProcessChunk(audioChunk);
-                
             }
         }
 
