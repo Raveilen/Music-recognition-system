@@ -150,3 +150,13 @@ Po naprawie - usprawienia
 	
 	Obiekt rankingujący powinien przyjmować w konstruktorze listę haszy dla danej piosenki oraz id piosenki, ale nie powinien tej listy zapisywać (bez sensu pamięciowo)
 	
+	
+Plan na jutro (22.01.2025)
+	- sprawdzić czy wykrywanie działa (przetestować pod kątem błędów w implementacji oraz błędów generalnie (testowanie w ciężkich warunakch))
+	- sprawdzić czy działa dla innych wersji utworu (niż dostarczony)
+	- wywalić niepotrzebny śmietnik, który nie jest w realnym wykorzystaniu (REFACTORING)
+	- Jeżeli pojawi się problem z iterowaniem po zakończeniu nagrywania to rozwiązać
+	-* Jak starczy czasu i siły, rozpocząć przerzutkę na .NET MVC Z tym co jest dostępne i przystąpić do tworzenia frontu aplikacji.
+
+
+	

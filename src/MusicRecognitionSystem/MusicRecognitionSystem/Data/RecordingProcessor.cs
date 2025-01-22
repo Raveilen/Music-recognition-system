@@ -24,6 +24,7 @@ namespace MusicRecognitionSystem.Data
         public List<MatchData> matches; //lista pasujących matchy
         public List<String> allHashes;
         public List<Byte> recorderBytes;
+        public List<Guid> chunksBestMatches;
 
         public List<List<Double[]>> tempSpectrograms = new List<List<double[]>>();
 
@@ -35,9 +36,10 @@ namespace MusicRecognitionSystem.Data
             };
             recorder.DataAvailable += OnDataAvailable;
 
-            matches = new List<MatchData>();
-            allHashes = new List<String>();
-            recorderBytes = new List<Byte>();
+            this.matches = new List<MatchData>();
+            this.allHashes = new List<String>();
+            this.recorderBytes = new List<Byte>();
+            this.chunksBestMatches = new List<Guid>();
         }
 
         public void StartRecording()
@@ -89,22 +91,31 @@ namespace MusicRecognitionSystem.Data
 
             using (MusicRecognitionContext context = new MusicRecognitionContext())
             {
-                foreach (int hash in chunkHashList)
+                List<MatchData> chunkMatches = new List<MatchData>();
+                
+                foreach (int hash in chunkHashList)//for each hash, we find matches in database, convert to MatchData and add to general list
                 {
                     List<SongHash> matchingHashes = context.SongHashes.Where(sh => sh.hash.hashValue == hash).ToList();
-
                     List<MatchData> matchs = matchingHashes.Select(mh => new MatchData (mh.songID, mh.timestamp)).ToList();
-                    /*//zrobić to optymalniej za pomocą select (powinno być szybciej)
-                    foreach (SongHash sh in matchingHashes)
-                    {
-                        MatchData match = new MatchData()
-                        {
-                            songID = sh.songID,
-                            timestamp = sh.timestamp
-                        };
-                        matches.Add(match);
-                    }*/
+                    chunkMatches.AddRange(matchs);
                 }
+
+                IEnumerable<IGrouping<Guid, int>> groupedMatches = chunkMatches.GroupBy(x => x.songID, x=>x.timestamp);
+
+                List<SongRecognition> matchesProbability = new List<SongRecognition>();
+                foreach (var songGroup in groupedMatches)
+                {
+                    //listing all timestamps for song id
+                    List<int> songTimestamps = songGroup.Select(x=>x).ToList();
+
+                    SongRecognition songStats = new SongRecognition(songGroup.Key, songTimestamps);
+                    
+                    //IQR caused that no matches left
+                    if(songStats.stdDev != -1 && songStats.mad != -1)
+                        matchesProbability.Add(songStats);
+                }
+
+                chunksBestMatches.Add(SongRecognition.TypeBestLocalGuess(matchesProbability));
             }
             
         }
