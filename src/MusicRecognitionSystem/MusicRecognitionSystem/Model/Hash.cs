@@ -13,7 +13,7 @@ namespace MusicRecognitionSystem.Model
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid hashID { get; set; }
-        public string hashValue { get; set; }
+        public int hashValue { get; set; }
 
         public ICollection<SongHash> songHashes { get; set; }
     }

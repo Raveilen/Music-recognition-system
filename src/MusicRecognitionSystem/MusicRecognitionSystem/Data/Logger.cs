@@ -23,13 +23,13 @@ namespace MusicRecognitionSystem.Data
             Hashlog.Flush();
         }
 
-        public static void LogHash(string hashValue)
+        public static void LogHash(int hashValue)
         {
             Hashlog.WriteLine($"Hash added: {hashValue}");
             Hashlog.Flush();
         }
 
-        public static void LogTimestamp(string hashValue, string songName, int chunkNumber)
+        public static void LogTimestamp(int hashValue, string songName, int chunkNumber)
         {
             Hashlog.WriteLine($"New Timestamp:  Chunk no. {chunkNumber} Song {songName} Hash {hashValue}");
             Hashlog.Flush();

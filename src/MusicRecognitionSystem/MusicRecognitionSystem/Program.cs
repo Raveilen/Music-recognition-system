@@ -36,7 +36,7 @@ void SpectrogramBasedHashGeneration()
         SongProcessor songProcessor = new SongProcessor(audioFile);
         songProcessor.computeSpectrogram();
         HashManager hashManager = new HashManager(songProcessor);
-        hashManager.GenerateHashesFromPeaks();
+        hashManager.GenerateHashesFromPeaks(HashManager.HashSave.TO_DATABASE);
 
         Logger.Log("\n");
         Console.WriteLine($"Song {audioFile.name} has been added to database");
@@ -90,4 +90,5 @@ void RecordedAudioPlayTest()
     recordingProcessor.recorder.Dispose();
 }
 
-TestRecording();
+//TestRecording();
+SpectrogramBasedHashGeneration();

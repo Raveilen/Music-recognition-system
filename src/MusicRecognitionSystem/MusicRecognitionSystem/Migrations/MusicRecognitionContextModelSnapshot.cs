@@ -28,9 +28,8 @@ namespace MusicRecognitionSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("hashValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("hashValue")
+                        .HasColumnType("int");
 
                     b.HasKey("hashID");
 

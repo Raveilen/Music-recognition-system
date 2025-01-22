@@ -17,7 +17,7 @@ namespace MusicRecognitionSystem.Data
         {
             if (_context.Songs.Where(s => s.name == songName).FirstOrDefault() != null)
             {
-                Console.WriteLine($"Song {songName} is already in database");
+                Logger.Log($"Song {songName} is already in database");
                 return;
             }
 
@@ -30,11 +30,11 @@ namespace MusicRecognitionSystem.Data
         }
 
         //metoda wykorzysytywana w addTimestamp
-        private static void addHash(string hashValue)
+        private static void addHash(int hashValue)
         {
             if(_context.Hashes.Where(h => h.hashValue == hashValue).FirstOrDefault() != null)
             {
-                Console.WriteLine($"Hash {hashValue} is already in database");
+                Logger.Log($"Hash {hashValue} is already in database");
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace MusicRecognitionSystem.Data
             Logger.LogHash(hashValue);
         }
 
-        public static void addSongTimestamp(string songName, string hashValue, int chunkNumber)
+        public static void addSongTimestamp(string songName, int hashValue, int chunkNumber)
         {
             //Check if song exists in database
             SongHash timestampExist = _context.SongHashes
@@ -58,12 +58,12 @@ namespace MusicRecognitionSystem.Data
                 .Where(sh => sh.timestamp == chunkNumber)
                 .FirstOrDefault();
 
-            //if timestamp already exists, do not add it
-            if (timestampExist != null)
+            //detects hash duplicates within chunk (not recommended to discard them here, alternatively it's better to discard them selecting top-n peaks)
+/*            if (timestampExist != null)
             {
-                //Console.WriteLine($"Timestamp {chunkNumber} for song {songName} has already been added to database with hash {hashValue}");
+                Logger.Log($"Timestamp {chunkNumber} for song {songName} has already been added to database with hash {hashValue}");
                 return;
-            }
+            }*/
 
             //Verify if song exists in database
             Song song = _context.Songs.Where(s => s.name == songName).FirstOrDefault();

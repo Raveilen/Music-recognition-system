@@ -12,8 +12,8 @@ using MusicRecognitionSystem.Data;
 namespace MusicRecognitionSystem.Migrations
 {
     [DbContext(typeof(MusicRecognitionContext))]
-    [Migration("20241019195005_timestampAddedAsPKFieldInSongHash")]
-    partial class timestampAddedAsPKFieldInSongHash
+    [Migration("20250121230409_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,9 +31,8 @@ namespace MusicRecognitionSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("hashValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("hashValue")
+                        .HasColumnType("int");
 
                     b.HasKey("hashID");
 

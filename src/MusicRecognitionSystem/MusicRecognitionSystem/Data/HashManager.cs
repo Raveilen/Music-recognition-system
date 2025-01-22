@@ -1,13 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using MusicRecognitionSystem.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
+
 
 namespace MusicRecognitionSystem.Data
 {
@@ -31,6 +23,13 @@ namespace MusicRecognitionSystem.Data
 
     internal class HashManager
     {
+
+        public enum HashSave
+        {
+            TO_DATABASE,
+            TO_LIST
+        }
+
         public static int LOWER_LIMIT = 41; //nie może być 40 bo według takiego algorytmu 40 paasowałoby jeszcze do poprzedniego przedziału.
         public static int UPPER_LIMIT = 300;
         
@@ -56,7 +55,7 @@ namespace MusicRecognitionSystem.Data
             peaks = new List<Peak>();
         }
 
-        public string generateHash(int chunkID)
+        public int generateHash(int chunkID)
         {
             double[] maxMagnitudes = { -1, -1, -1, -1, -1 };
             int[] maxFrequencies = new int[4];
@@ -79,7 +78,7 @@ namespace MusicRecognitionSystem.Data
                     throw new Exception("Attempt to process data from invalid range!");
                 }
             }
-            string songHash = computeHash(maxFrequencies);
+            int songHash = computeHash(maxFrequencies);
 
             return songHash;
         }
@@ -89,18 +88,18 @@ namespace MusicRecognitionSystem.Data
             //For each song chunk
             for (int i = 0; i < songProcessor.songFrequencies.Length; i++)
             {
-                string songHash = generateHash(i);
+                int songHash = generateHash(i);
                 saveHashToDatabase(songHash, i);
             }
         }
 
-        private void saveHashToDatabase(string songHash, int chunkNumber)
+        private void saveHashToDatabase(int songHash, int chunkNumber)
         {
             //If hash does not exist, adds it, else adds only SongHash record (dupplicate hashes not allowed)
             CRUDManager.addSongTimestamp(songProcessor.audioFile.name, songHash, chunkNumber);
         }
 
-        private string computeHash(int[] maxfrequencies)
+        private int computeHash(int[] maxfrequencies)
         {
             if(maxfrequencies.Length != 4)
             {
@@ -110,7 +109,7 @@ namespace MusicRecognitionSystem.Data
             //algorytm jest prosty w implementacji, ułatwia debugowanie i jest uniwersalny, ponieważ zwraca uwagę na kolejność przedziałów
             /* Hash do testów */
             /*return $"{maxFrequencies[0]} {maxFrequencies[1]} {maxFrequencies[2]} {maxFrequencies[3]}"; */
-            return $"{maxfrequencies[0]}{maxfrequencies[1]}{maxfrequencies[2]}{maxfrequencies[3]}";
+            return Int32.Parse($"{maxfrequencies[0]}{maxfrequencies[1]}{maxfrequencies[2]}{maxfrequencies[3]}");
         }
 
         private static int rangeSelect(int frequencyPosition)
@@ -196,8 +195,11 @@ namespace MusicRecognitionSystem.Data
             TopNPeaksOnly();
         }
 
-        public void GenerateHashesFromPeaks()
+        public List<int> GenerateHashesFromPeaks(HashSave hs)
         {
+            //initialize list if saving to list
+            List<int>? hashes = hs == HashSave.TO_LIST ? new List<int>() : null;
+
             ExtractPeaks();
             //combine peaks into pairs based on time difference and frequencies
             //peak time refers to peak which is considered in external loop
@@ -211,29 +213,13 @@ namespace MusicRecognitionSystem.Data
                     int f2 = peaks[i + j].frequency;
 
                     int timeOffset = t2 - t1;
-                    string hash = ((f1 << 16) | (f2 << 8) | timeOffset).ToString(); //it's worth to consider int comparing insted of string for efficiency
-                    saveHashToDatabase(hash, t1);
-                }
-            }
-        }
-
-        public List<string> HashesToList()
-        {
-            List<string> hashes = new List<string>();
-
-            ExtractPeaks();
-            for (int i = 0; i < peaks.Count; i++)
-            {
-                for (int j = 1; j < FANOUT && (i + j) < peaks.Count; j++)
-                {
-                    int t1 = peaks[i].time;
-                    int f1 = peaks[i].frequency;
-                    int t2 = peaks[i + j].time;
-                    int f2 = peaks[i + j].frequency;
-
-                    int timeOffset = t2 - t1;
-                    string hash = ((f1 << 16) | (f2 << 8) | timeOffset).ToString(); //it's worth to consider int comparing insted of string for efficiency
-                    hashes.Add(hash);
+                    int hash = ((f1 << 16) | (f2 << 8) | timeOffset); //it's worth to consider int comparing insted of string for efficiency
+                    
+                    //save hash with selected option
+                    if(hs == HashSave.TO_DATABASE)
+                        saveHashToDatabase(hash, t1);
+                    else if(hs == HashSave.TO_LIST)
+                        hashes.Add(hash);
                 }
             }
 

@@ -2,6 +2,7 @@
 using MusicRecognitionSystem.Model;
 using Microsoft.Identity.Client;
 using NAudio.Midi;
+using System.Diagnostics.Contracts;
 
 namespace MusicRecognitionSystem.Data
 {
@@ -9,6 +10,12 @@ namespace MusicRecognitionSystem.Data
     {
         public Guid songID { get; set; }
         public int timestamp { get; set; }
+
+        public MatchData(Guid songID, int timestamp)
+        {
+            this.songID = songID;
+            this.timestamp = timestamp;
+        }
     }
 
     internal class RecordingProcessor
@@ -71,7 +78,7 @@ namespace MusicRecognitionSystem.Data
             tempSpectrograms.Add(chunkProcessor.spectrogram);
 
             HashManager chunkHashManager = new HashManager(chunkProcessor);
-            List<string> chunkHashList = chunkHashManager.HashesToList();
+            List<int> chunkHashList = chunkHashManager.GenerateHashesFromPeaks(HashManager.HashSave.TO_LIST);
 
             //string chunkHash = chunkHashManager.generateHash(0); //only one chunk so index should be 0
             //allHashes.Add(chunkHash);
@@ -82,10 +89,12 @@ namespace MusicRecognitionSystem.Data
 
             using (MusicRecognitionContext context = new MusicRecognitionContext())
             {
-                foreach (string hash in chunkHashList)
+                foreach (int hash in chunkHashList)
                 {
                     List<SongHash> matchingHashes = context.SongHashes.Where(sh => sh.hash.hashValue == hash).ToList();
 
+                    List<MatchData> matchs = matchingHashes.Select(mh => new MatchData (mh.songID, mh.timestamp)).ToList();
+                    /*//zrobić to optymalniej za pomocą select (powinno być szybciej)
                     foreach (SongHash sh in matchingHashes)
                     {
                         MatchData match = new MatchData()
@@ -94,7 +103,7 @@ namespace MusicRecognitionSystem.Data
                             timestamp = sh.timestamp
                         };
                         matches.Add(match);
-                    }
+                    }*/
                 }
             }
             

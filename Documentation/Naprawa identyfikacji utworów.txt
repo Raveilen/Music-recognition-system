@@ -124,3 +124,29 @@ Proponuję zatem na sztywno wczytanie całego audio (ewentualnie nadanie timera,
 Czat podopowiada że lepszym rozwiązaniem będzie wczytywanie nagrania chunkami zamiast wczytywanie nagrania jako całości (lepsze w kontekście przetwarzania w czasie rzeczywistym i ewentualny podjęciu decyzji szybciej).
 
 Batching jest zalecany w kontekście przetawrzania ciągłego strumienia dźwięku z nagrania.
+
+
+Po naprawie - usprawienia 
+	
+	Problem duplikatów haszy:
+		Obecnie duplikaty haszy w obrębie chunka są kasowane (NIEZALECANE)
+			- duplikaty haszy zwiększają odporność na zaszumienie
+			- mniejsza skuteczność dla krótkich, powtarzalnych fragmentów utworu
+			- pozbawimy się dodatkowych haszy opisujących dany utwór
+		
+	Zalecane rozwiązania:
+		1) Wyrzucamy duplikaty haszy w obrębie chunka na rzecz innych wartości z top-n
+		2) Nie wyrzucamy nic (technicznie hasz i tak zapisywany jest raz a dalej to już tylko jego wystąpienia więc ilość zajmowana w pamięci nie jest taka duża) THIS
+
+	Implementacja rozpoznawania utworów prawdopodobnie będzie przebiegała z użyciem SD (Standard Deviation) IQR (Interquantile Range) oraz MAD (Mean Absolute Deviation)
+	
+	Należy się jednak zastanowić jakie informacje odnośnie hasza będą nam potrzebne do skutecznego przetwarzania (mówimy o haszah pobranych z bazy danych):
+		- id piosenki 
+		- timestamp (id chunka w piosence w obrębie którego pojawił się hasz)
+		
+	Dobrym pomysłem może być stworzenie odrębnej której zadaniem będzie przechowywanie pasujących haszy ( w obrębie danego wywołania process chunk ) dla danej piosenki i obliczenie SD oraz MAD. Na podstawie tych dwóch wartości obliczany będzie współczynnik rankingujący utwór (to czy raczej nie to).
+	
+	Każde chunk processing będzie generowało (w zalezności od ilości dopasowanych piosenek) własny tego typu obiekt klasy, którego zadaniem będzie przechowywanie wartości rankingującej obliczonej w konstruktorze na podstawie listy timestampów oraz id piosenki. Po wyliczeniu wszystkich wartości rankingujących, wybierana jest najkorzystniejsza a jej hasz piosenki jest zapisywany w jako dominujący (Można zrobić w postaci listy, a potem pogrupować w razie gdyby doszło do jakiegoś przechylenia w wartościach w danym chunku)
+	
+	Obiekt rankingujący powinien przyjmować w konstruktorze listę haszy dla danej piosenki oraz id piosenki, ale nie powinien tej listy zapisywać (bez sensu pamięciowo)
+	

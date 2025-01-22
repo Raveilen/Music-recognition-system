@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MusicRecognitionSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,7 +16,7 @@ namespace MusicRecognitionSystem.Migrations
                 columns: table => new
                 {
                     hashID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    hashValue = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    hashValue = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -45,7 +45,7 @@ namespace MusicRecognitionSystem.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SongHashes", x => new { x.songID, x.hashID });
+                    table.PrimaryKey("PK_SongHashes", x => new { x.songID, x.hashID, x.timestamp });
                     table.ForeignKey(
                         name: "FK_SongHashes_Hashes_hashID",
                         column: x => x.hashID,
