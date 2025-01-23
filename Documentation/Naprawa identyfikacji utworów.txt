@@ -136,8 +136,9 @@ Po naprawie - usprawienia
 		
 	Zalecane rozwiązania:
 		1) Wyrzucamy duplikaty haszy w obrębie chunka na rzecz innych wartości z top-n
+			Też lipa bo najpierw jest szukanie top N na podstawie magnitude, a dopiero potem określa się hasze. Hasze generuje się na podstawie offsetu czasowego a zatem dupa bo trzeba by wykluczać powtarzające się częstotliwości w obrębie chunka (nie wiem czy niezbyt dewastujące dla programu).
 		2) Nie wyrzucamy nic (technicznie hasz i tak zapisywany jest raz a dalej to już tylko jego wystąpienia więc ilość zajmowana w pamięci nie jest taka duża) THIS
-
+			powtarzające się wartości hasza w obrębie chunka - do tego timestampy musiałyby mieć swoje unikalne id, ponieważ obecnie klucz obcy zabrania tworzenia identycznych rekordów. 
 	Implementacja rozpoznawania utworów prawdopodobnie będzie przebiegała z użyciem SD (Standard Deviation) IQR (Interquantile Range) oraz MAD (Mean Absolute Deviation)
 	
 	Należy się jednak zastanowić jakie informacje odnośnie hasza będą nam potrzebne do skutecznego przetwarzania (mówimy o haszah pobranych z bazy danych):
@@ -152,11 +153,48 @@ Po naprawie - usprawienia
 	
 	
 Plan na jutro (22.01.2025)
-	- sprawdzić czy wykrywanie działa (przetestować pod kątem błędów w implementacji oraz błędów generalnie (testowanie w ciężkich warunakch))
-	- sprawdzić czy działa dla innych wersji utworu (niż dostarczony)
-	- wywalić niepotrzebny śmietnik, który nie jest w realnym wykorzystaniu (REFACTORING)
+	- ustalić co zrobić z powtórkami timestampów (uwzględniamy czy wyrzucamy
+	- sprawdzić czy wykrywanie działa (przetestować pod kątem błędów w implementacji oraz błędów generalnie (testowanie w ciężkich warunakch)) DONE
+	- sprawdzić czy działa dla innych wersji utworu (niż dostarczony) DONE
+	- wywalić niepotrzebny śmietnik, który nie jest w realnym wykorzystaniu (REFACTORING) DONE?
 	- Jeżeli pojawi się problem z iterowaniem po zakończeniu nagrywania to rozwiązać
 	-* Jak starczy czasu i siły, rozpocząć przerzutkę na .NET MVC Z tym co jest dostępne i przystąpić do tworzenia frontu aplikacji.
+	
+Fitrowanie haszy nie działa tak jak powinno. Wkrywa nie tak jak trzeba (jak cicho) a już na pewno nie rozpoznaje utworów z innej wersji wykonania niż dostarczona z pliku
+
+Niestety podejście z wykorzystaniem stdDev oraz mad nie działa. Nawet ilościowe zliczanie haszy okazuje się być lepsze niż to rozwiązanie.
+
+Zastosowanie miar statystycznych:
+	- dla krótkich nagrań, kiepski match (czasami nie trafia)
+	- dla długich raczej nie ma problemu
+	- dla piosenki z innej wersji nagrania nie ma szans na matcha
+
+Zastosowanie zliczania haszy
+	- dla krótkich nagrań raczej się zgadza
+	- dla długich nagrań się zgadza
+	- jeżeli nagranie jest długie, match dla utworu z innej wersji nagraniowej
+	
+	
+Nowe podejście: Ustalamy piosenkę na podstawie powtarzającego się offsetu
+	1) Dla każdego chunka sprawdzamy znalezione timestampy z bazy danych
+	2) Dla każdej piosenki (z timestampów) liczymy offsety czyli różnicę między położeniem w nagraniu a różnicę między położeniem w piosence
+	3) Zbieramy (zmiast haszy) wraz z przypisanymi do nich ID piosenki
+	4) na koniec sumujemy dla każdej piosenki największą ilość offsetów tego samego rodzaju 
+	5) Wygyrwa piosenka o największym, ilościowym dopasowaniu ofsetów
+
+Rozwiązanie z offsetami:
+	- zgadza się dla Gone Country i dla Bon Jovi
+	- ma problem z rozpoznaniem Smoking Fire (prawdopodobnie piosenka jest bardzo powtarzalna na wskazanym fragmencie przez co zwraca bardzo podobne rezultaty)
+	- Chyba rozpoznaje utwór w innej wersji, ale dobrze jak nie ma zbyt dużego zaszumienia
+	
+Plan na jutro (23.01.2024)
+	- stawiamy aplikację na .NET MVC
+	- funkcjonalności będą jeszcze dalej testowane na wersji konsolowej aczkolwiek trzeba już przygotować GUI żeby nie zostać w lesie.
+	- Generalnie system dopasowywania w jakimś stopniu już działa
+	- jego poprawki nie są tak istotne jak przygotowanie GUI
+	
+
+
 
 
 	

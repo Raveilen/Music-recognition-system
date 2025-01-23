@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Identity.Client;
 using MusicRecognitionSystem.Model;
 using System;
@@ -59,11 +60,11 @@ namespace MusicRecognitionSystem.Data
                 .FirstOrDefault();
 
             //detects hash duplicates within chunk (not recommended to discard them here, alternatively it's better to discard them selecting top-n peaks)
-/*            if (timestampExist != null)
+            if (timestampExist != null)
             {
                 Logger.Log($"Timestamp {chunkNumber} for song {songName} has already been added to database with hash {hashValue}");
                 return;
-            }*/
+            }
 
             //Verify if song exists in database
             Song song = _context.Songs.Where(s => s.name == songName).FirstOrDefault();
@@ -87,6 +88,23 @@ namespace MusicRecognitionSystem.Data
             Logger.LogTimestamp(hashValue, songName, chunkNumber);
         }
 
+        public static List<SongHash> GetMatchingHashes(int hashValue)
+        {
+            return _context.SongHashes.Where(sh => sh.hash.hashValue == hashValue).ToList();
+        }
+
+        public static string GetSongName(Guid songID)
+        {
+            string songTitle =  _context.Songs.Where(s => s.songID == songID).FirstOrDefault().name;
+            if(songTitle == null)
+            {
+                return "Unknown";
+            }
+            else
+            {
+                return songTitle;
+            }
+        }
 
     }
 }

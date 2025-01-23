@@ -54,11 +54,6 @@ namespace MusicRecognitionSystem.Data
                     }
                 }
             }
-            
-            /*string extension = System.IO.Path.GetExtension(audioNames[index]);
-            string songName = audioNames[index].Substring(0, audioNames[index].Length - extension.Length);
-
-            return new AudioFile(songName, File.ReadAllBytes(audioFiles[index]));*/
         }
 
         public static void LoadSongsMetadata()

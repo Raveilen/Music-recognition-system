@@ -34,9 +34,9 @@ namespace MusicRecognitionSystem.Data
             this.songID = songID;
 
             // stdDev & mad callculations
-            List<int> filteredTimestamps = FilterWithIQR(timestamps);
+            //List<int> filteredTimestamps = FilterWithIQR(timestamps); //IQR seem sto be too aggresive atm, because only few hashes left and almost always with the same value
 
-            if(filteredTimestamps.Count == 0)
+            if(timestamps.Count == 0)
             {
                 //markers means that there are no timestamps (check if not to frequent occurence)
                 stdDev = -1;
@@ -46,8 +46,8 @@ namespace MusicRecognitionSystem.Data
             }
 
             //now we have both deciding values callculated`
-            this.stdDev = CalculateStandardDeviation(filteredTimestamps);
-            this.mad = CalculateMedianAbsoluteDeviation(filteredTimestamps);
+            this.stdDev = CalculateStandardDeviation(timestamps);
+            this.mad = CalculateMedianAbsoluteDeviation(timestamps);
 
             //we can now calculate ranking value (allows to compare songs)
             this.rankingVal = CalculateRankingValue(this.stdDev, this.mad);
@@ -103,6 +103,11 @@ namespace MusicRecognitionSystem.Data
 
         public static Guid ChooseBestMatchingSongID(List<Guid> localBestMatches) //after recording is stopped, we choose best matching song from gathered candidates
         {
+            if(localBestMatches.Count == 0)
+            {
+                Console.WriteLine("No Matches Found");
+                return Guid.Empty;
+            }
             var groupedMatches = localBestMatches.GroupBy(x => x);
             var sortedMatches = groupedMatches.OrderByDescending(x => x.Count());
 

@@ -29,9 +29,6 @@ namespace MusicRecognitionSystem.Data
             TO_DATABASE,
             TO_LIST
         }
-
-        public static int LOWER_LIMIT = 41; //nie może być 40 bo według takiego algorytmu 40 paasowałoby jeszcze do poprzedniego przedziału.
-        public static int UPPER_LIMIT = 300;
         
         //static thresholding
         public double THRESHOLD = 20.0; //defines border which tells if magnitude is high enough to be considered as a peak
@@ -43,9 +40,6 @@ namespace MusicRecognitionSystem.Data
         //top N peaks
         public int N = 4;
 
-        // Przedziały: 41-80, 81-120, 121-180, 181-300
-        public static int[] RANGE = new int[] { 80, 120, 180, UPPER_LIMIT + 1 };
-
         public SongProcessor songProcessor;
         public List<Peak> peaks;
 
@@ -55,72 +49,10 @@ namespace MusicRecognitionSystem.Data
             peaks = new List<Peak>();
         }
 
-        public int generateHash(int chunkID)
-        {
-            double[] maxMagnitudes = { -1, -1, -1, -1, -1 };
-            int[] maxFrequencies = new int[4];
-            for (int i = LOWER_LIMIT; i < UPPER_LIMIT - 1; i++)
-            {
-                Complex frequency = songProcessor.songFrequencies[chunkID][i];
-                double magnitude = Math.Log(Complex.Abs(frequency) + 1);
-
-                int index = rangeSelect(i);
-                if (index != -1) //checks if value in range
-                {
-                    if (magnitude > maxMagnitudes[index])
-                    {
-                        maxMagnitudes[index] = magnitude;
-                        maxFrequencies[index] = i;
-                    }
-                }
-                else
-                {
-                    throw new Exception("Attempt to process data from invalid range!");
-                }
-            }
-            int songHash = computeHash(maxFrequencies);
-
-            return songHash;
-        }
-
-        public void generateHashes()
-        {
-            //For each song chunk
-            for (int i = 0; i < songProcessor.songFrequencies.Length; i++)
-            {
-                int songHash = generateHash(i);
-                saveHashToDatabase(songHash, i);
-            }
-        }
-
         private void saveHashToDatabase(int songHash, int chunkNumber)
         {
             //If hash does not exist, adds it, else adds only SongHash record (dupplicate hashes not allowed)
             CRUDManager.addSongTimestamp(songProcessor.audioFile.name, songHash, chunkNumber);
-        }
-
-        private int computeHash(int[] maxfrequencies)
-        {
-            if(maxfrequencies.Length != 4)
-            {
-                throw new Exception("Invalid array length!");
-            }
-
-            //algorytm jest prosty w implementacji, ułatwia debugowanie i jest uniwersalny, ponieważ zwraca uwagę na kolejność przedziałów
-            /* Hash do testów */
-            /*return $"{maxFrequencies[0]} {maxFrequencies[1]} {maxFrequencies[2]} {maxFrequencies[3]}"; */
-            return Int32.Parse($"{maxfrequencies[0]}{maxfrequencies[1]}{maxfrequencies[2]}{maxfrequencies[3]}");
-        }
-
-        private static int rangeSelect(int frequencyPosition)
-        {
-            if (frequencyPosition < LOWER_LIMIT || frequencyPosition > UPPER_LIMIT)
-            {
-                return -1;
-            }
-            int index = 0;
-            for (; frequencyPosition > RANGE[index]; index++);
-            return index;
         }
 
         private static double ComputeMedian(double[] values) //mediana na potrzeby sąsiedztwa
@@ -163,7 +95,7 @@ namespace MusicRecognitionSystem.Data
             //group by time step
             var groupedPeaks = peaks.GroupBy(p => p.time);
 
-            //extract only top N peas from each time group
+            //extract only top N peaks from each time group
             foreach(var group in groupedPeaks)
             {
                 var topNInGroup = group.OrderByDescending(p=>p.magnitude).Take(N);
@@ -213,7 +145,7 @@ namespace MusicRecognitionSystem.Data
                     int f2 = peaks[i + j].frequency;
 
                     int timeOffset = t2 - t1;
-                    int hash = ((f1 << 16) | (f2 << 8) | timeOffset); //it's worth to consider int comparing insted of string for efficiency
+                    int hash = ((f1 << 16) | (f2 << 8) | timeOffset);
                     
                     //save hash with selected option
                     if(hs == HashSave.TO_DATABASE)

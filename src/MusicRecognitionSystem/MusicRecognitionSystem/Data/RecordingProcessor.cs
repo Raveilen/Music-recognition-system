@@ -20,6 +20,8 @@ namespace MusicRecognitionSystem.Data
 
     internal class RecordingProcessor
     {
+        private int chunkCounter = 0;
+
         public WaveInEvent recorder;
         public List<MatchData> matches; //lista pasujących matchy
         public List<String> allHashes;
@@ -67,11 +69,13 @@ namespace MusicRecognitionSystem.Data
                 Array.Copy(e.Buffer, bytesProcessed, audioChunk, 0, SongProcessor.CHUNK_SIZE * 2);
                 bytesProcessed += SongProcessor.CHUNK_SIZE * 2;
 
-                ProcessChunk(audioChunk);
+                ProcessChunk(audioChunk, this.chunkCounter);
+
+                chunkCounter++;
             }
         }
 
-        private void ProcessChunk(byte[] audioChunk)
+        private void ProcessChunk(byte[] audioChunk, int chunkNumber)
         {
             //obtain chunk hash
             SongProcessor chunkProcessor = new SongProcessor(audioChunk);
@@ -89,35 +93,45 @@ namespace MusicRecognitionSystem.Data
 
             //TUTAJ, PONIEWAŻ MAMY DO CZYNIENIA Z WIELOMA HASZAMI, NALEŻY UWZGLĘDNIĆ TEN PRZYPADEK I ROZBUDOWAĆ FUNKCJĘ
 
-            using (MusicRecognitionContext context = new MusicRecognitionContext())
-            {
-                List<MatchData> chunkMatches = new List<MatchData>();
-                
-                foreach (int hash in chunkHashList)//for each hash, we find matches in database, convert to MatchData and add to general list
-                {
-                    List<SongHash> matchingHashes = context.SongHashes.Where(sh => sh.hash.hashValue == hash).ToList();
-                    List<MatchData> matchs = matchingHashes.Select(mh => new MatchData (mh.songID, mh.timestamp)).ToList();
-                    chunkMatches.AddRange(matchs);
-                }
+            //List<MatchData> chunkMatches = new List<MatchData>();
 
-                IEnumerable<IGrouping<Guid, int>> groupedMatches = chunkMatches.GroupBy(x => x.songID, x=>x.timestamp);
+            foreach (int hash in chunkHashList)//for each hash, we find matches in database, convert to MatchData and add to general list
+            {
+                List<SongHash> matchingHashes = CRUDManager.GetMatchingHashes(hash);
+
+                //we save offsets for each sons here (difference between song timestamp and recording chunk timestamp)
+                List<MatchData> matchs = matchingHashes.Select(mh => new MatchData(mh.songID, chunkNumber - mh.timestamp)).ToList();
+
+                matches.AddRange(matchs);
+            }
+
+            //real time procesing and statistics for each batch
+            /*if(chunkMatches.Count != 0) //checks is any match has been found
+            {
+                IEnumerable<IGrouping<Guid, int>> groupedMatches = chunkMatches.GroupBy(x => x.songID, x => x.timestamp);
 
                 List<SongRecognition> matchesProbability = new List<SongRecognition>();
                 foreach (var songGroup in groupedMatches)
                 {
                     //listing all timestamps for song id
-                    List<int> songTimestamps = songGroup.Select(x=>x).ToList();
+                    List<int> songTimestamps = songGroup.Select(x => x).ToList();
 
+                   *//* if(songTimestamps.Count < 3) //if less than 3 timestamps, we discard them
+                    {
+                        Console.WriteLine("Song Discarded for this chunk (to few hashes)");
+                        continue;
+                    }*//*
+                        
                     SongRecognition songStats = new SongRecognition(songGroup.Key, songTimestamps);
-                    
+                    Console.WriteLine($"song: {CRUDManager.GetSongName(songGroup.Key)}, stdDev: {songStats.stdDev} mad: {songStats.mad} ranking: {songStats.rankingVal}");
+
                     //IQR caused that no matches left
-                    if(songStats.stdDev != -1 && songStats.mad != -1)
+                    if (songStats.stdDev != -1 && songStats.mad != -1)
                         matchesProbability.Add(songStats);
                 }
-
-                chunksBestMatches.Add(SongRecognition.TypeBestLocalGuess(matchesProbability));
-            }
-            
+                if (matchesProbability.Count > 0)
+                    chunksBestMatches.Add(SongRecognition.TypeBestLocalGuess(matchesProbability));
+            }*/
         }
 
         public void PlayRecordedAudio()
